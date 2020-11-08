@@ -1,0 +1,29 @@
+@using System.Reflection
+@using Microsoft.AspNetCore.Components.WebAssembly.Services
+@inject LazyAssemblyLoader AssemblyLoader
+
+<Router AppAssembly="@typeof(Program).Assembly"
+		OnNavigateAsync="OnNavigateAsync"
+		AdditionalAssemblies="_lazyLoadedAssemblies">
+	<Found Context="routeData">
+		<RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+	</Found>
+	<NotFound>
+		<LayoutView Layout="@typeof(MainLayout)">
+			<p>Sorry, there's nothing at this address.</p>
+		</LayoutView>
+	</NotFound>
+</Router>
+@code
+{
+	private List<Assembly> _lazyLoadedAssemblies = new List<Assembly>();
+
+	private async Task OnNavigateAsync(NavigationContext context)
+	{
+		if (context.Path == "fetchdata")
+		{
+			var assemblies = await AssemblyLoader.LoadAssembliesAsync(new[] { "Weather.dll" });
+			_lazyLoadedAssemblies.AddRange(assemblies);
+		}
+	}
+}
